@@ -22,8 +22,13 @@ module Docs
       warn "Converting #{path} => #{new_path}"
       new_contents = contents
                      .gsub(%r{<a\s+id\s*=\s*.*?>.*?</a>}i, '')
-                     .gsub('.html', '.md')
-                     .gsub(/<%=\s+partial\s+['"].*?['"]\s+%>/i) do |match|
+        .gsub(%r{(\(.*?\.html.*?\))}) do |match|
+        if URI.parse(match[1..-2]).relative?
+          match.gsub('.html','.md')
+        else
+          match
+        end
+        end.gsub(/<%=\s+partial\s+['"].*?['"]\s+%>/i) do |match|
         filename = match.match(/['"](.*?)['"]/)[1]
         partial_path = File.join(File.dirname(filename), "_#{File.basename filename}")
         Document.new(
