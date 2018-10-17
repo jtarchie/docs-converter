@@ -53,7 +53,8 @@ RSpec.describe 'when running the converter' do
 
   it 'handles removings a[id]' do
     doc = create_doc '#<a id="testing"></a> testing'
-    convert_docs
+    expect(convert_docs).to be_truthy
+
     expect(doc.contents).to eq '# testing'
     expect(File.exist?(doc.new_path)).to be_truthy
   end
@@ -61,18 +62,18 @@ RSpec.describe 'when running the converter' do
   it 'converts partials to {%include%}' do
     doc = create_doc '<%= partial "testing/some_file" %>'
     partial = create_partial 'testing/_some_file'
-    convert_docs
+    expect(convert_docs).to be_truthy
 
     expect(doc.contents).to eq '{% include "testing/_some_file.md" %}'
     expect(File.exist?(partial.new_path)).to be_truthy
   end
 
   it 'converts html links to md' do
-    doc1 = create_doc '<a href="testing.html">testing</a>'
-    doc2 = create_doc '[testing](testing.html#something)'
-    convert_docs
+    doc = create_doc '[testing](testing.html#something)'
+    expect(convert_docs).to be_falsy
 
-    expect(doc1.contents).to eq '<a href="testing.md">testing</a>'
-    expect(doc2.contents).to eq '[testing](testing.md#something)'
+    expect(doc.contents).to eq '[testing](testing.md#something)'
+    File.write(File.join(source_dir, 'testing.html.md.erb'), 'testing')
+    expect(convert_docs).to be_truthy
   end
 end
