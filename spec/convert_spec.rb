@@ -3,6 +3,7 @@
 require 'fileutils'
 require 'securerandom'
 require 'spec_helper'
+require 'tempfile'
 require 'tmpdir'
 require 'yaml'
 
@@ -47,10 +48,11 @@ RSpec.describe 'when running the converter' do
     )
   end
 
-  def convert_docs
+  def convert_docs(sitemap_path: nil)
     Docs::Convert.new(
       source_dir: source_dir,
-      output_dir: output_dir
+      output_dir: output_dir,
+      sitemap_path: sitemap_path
     ).execute!
   end
 
@@ -86,11 +88,8 @@ RSpec.describe 'when running the converter' do
     let(:config) { YAML.load_file File.join(output_dir, 'mkdocs.yml') }
     let(:requirements) { File.read File.join(output_dir, 'requirements.txt') }
 
-    before(:each) do
-      expect(convert_docs).to be_truthy
-    end
-
     it 'uses material view' do
+      expect(convert_docs).to be_truthy
       expect(config['theme']).to eq 'material'
       expect(requirements).to include 'mkdocs-material'
 
@@ -99,8 +98,28 @@ RSpec.describe 'when running the converter' do
     end
 
     it 'has allows syntax highlighting like github' do
+      expect(convert_docs).to be_truthy
       expect(requirements).to include 'pygments'
       expect(config['markdown_extensions']).to include 'codehilite'
+    end
+
+    it 'converts the original site map (if provided)' do
+      sitemap = Tempfile.new('sitemap')
+      sitemap.write(<<-HTML)
+      <ul>
+        <li><a href="doc1.html">Document 1</a></li>
+        <li><a href="doc2.md">Document 2</a></li>
+        <li><a href="doc3.md">Document 3</a></li>
+      </ul>
+      HTML
+      sitemap.close
+
+      convert_docs(sitemap_path: sitemap.path)
+      expect(config['nav']).to eq [
+        { 'Document 1' => 'doc1.md' },
+        { 'Document 2' => 'doc2.md' },
+        { 'Document 3' => 'doc3.md' }
+      ]
     end
   end
 end

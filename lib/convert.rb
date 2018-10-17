@@ -1,10 +1,11 @@
 # frozen_string_literal: true
 
 require 'fileutils'
+require 'nokogiri'
 require 'yaml'
 
 module Docs
-  Convert = Struct.new(:source_dir, :output_dir, keyword_init: true) do
+  Convert = Struct.new(:source_dir, :output_dir, :sitemap_path, keyword_init: true) do
     def execute!
       system("mkdocs new #{output_dir}")
       Dir[File.join(source_dir, '*.html.md.erb')].each do |filename|
@@ -20,8 +21,9 @@ module Docs
       config['strict'] = true
       config['use_directory_urls'] = false
       config['markdown_extensions'] = ['codehilite']
+      config['nav'] = generate_nav
 
-      File.write(config_file, YAML.dump(config))
+      File.write(config_file, "# Example: https://github.com/squidfunk/mkdocs-material/blob/master/mkdocs.yml\n" + YAML.dump(config))
       requirements_file = File.join(output_dir, 'requirements.txt')
       File.write(requirements_file, [
         'mkdocs',
@@ -31,6 +33,19 @@ module Docs
       Dir.chdir(output_dir) do
         system('pip install -r requirements.txt')
         system('mkdocs build -s')
+      end
+    end
+
+    private
+
+    def generate_nav
+      return [] unless sitemap_path
+
+      site_links = Nokogiri::HTML(File.read(sitemap_path)).css('ul li a')
+      site_links.map do |link|
+        name = link.text
+        uri  = File.basename(link['href']).gsub('.html', '.md').to_s
+        { name => uri }
       end
     end
   end
