@@ -93,6 +93,14 @@ RSpec.describe 'when running the converter' do
     it 'uses material view' do
       expect(config['theme']).to eq 'material'
       expect(requirements).to include 'mkdocs-material'
+
+      expect(config['strict']).to eq true
+      expect(config['use_directory_urls']).to eq false
+    end
+
+    it 'has allows syntax highlighting like github' do
+      expect(requirements).to include 'pygments'
+      expect(config['markdown_extensions']).to include 'codehilite'
     end
   end
 end

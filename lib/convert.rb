@@ -17,9 +17,17 @@ module Docs
       config_file = File.join(output_dir, 'mkdocs.yml')
       config = YAML.load_file config_file
       config['theme'] = 'material'
+      config['strict'] = true
+      config['use_directory_urls'] = false
+      config['markdown_extensions'] = ['codehilite']
+
       File.write(config_file, YAML.dump(config))
       requirements_file = File.join(output_dir, 'requirements.txt')
-      File.write(requirements_file, ['mkdocs', 'mkdocs-material'].join("\n"))
+      File.write(requirements_file, [
+        'mkdocs',
+        'mkdocs-material',
+        'pygments'
+      ].join("\n"))
       Dir.chdir(output_dir) do
         system('pip install -r requirements.txt')
         system('mkdocs build -s')
