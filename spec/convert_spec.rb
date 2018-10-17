@@ -10,6 +10,7 @@ require 'yaml'
 RSpec.describe 'when running the converter' do
   let(:source_dir) { Dir.mktmpdir }
   let(:output_dir) { Dir.mktmpdir }
+  let(:config) { YAML.load_file File.join(output_dir, 'mkdocs.yml') }
 
   Document = Struct.new(:path, :source_dir, :output_dir, keyword_init: true) do
     def new_path
@@ -17,7 +18,8 @@ RSpec.describe 'when running the converter' do
       extension = '.' + File.basename(path).split('.')[1..-1].join('.')
       base_name = File.basename(path, extension)
       new_extension = {
-        '.html.md.erb' => '.md'
+        '.html.md.erb' => '.md',
+        '.mmd.erb' => '.mmd'
       }.fetch(extension)
       File.join(output_dir, 'docs', relative, "#{base_name}#{new_extension}")
     end
@@ -87,10 +89,19 @@ RSpec.describe 'when running the converter' do
       doc = create_doc "<%= 'Line 1' %>\n# testing\n<%= '3' %>"
       expect { convert_docs }.to output(/WARNING: ERB found in #{doc.path} at line 1/).to_stderr
     end
+
+    it 'converts mermaid documents to a div.mermaid' do
+      doc = create_doc(
+        "<% mermaid_diagram do %>\nsome mermaid stuff\n<% end %>",
+        '.mmd.erb'
+      )
+      expect(convert_docs).to be_truthy
+      expect(doc.contents).to eq "<div class=\"mermaid\">\nsome mermaid stuff\n</div>"
+      expect(config['extra_javascript']).to include /mermaid.min.js/
+    end
   end
 
   context 'with the mkdocs.yml' do
-    let(:config) { YAML.load_file File.join(output_dir, 'mkdocs.yml') }
     let(:requirements) { File.read File.join(output_dir, 'requirements.txt') }
 
     it 'uses material view' do

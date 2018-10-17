@@ -8,7 +8,9 @@ module Docs
   Convert = Struct.new(:source_dir, :output_dir, :sitemap_path, keyword_init: true) do
     def execute!
       system("mkdocs new #{output_dir}")
-      Dir[File.join(source_dir, '*.html.md.erb')].each do |filename|
+      Dir[File.join(source_dir, '**', '*')].each do |filename|
+        next if File.directory?(filename)
+
         Document.new(
           path: filename,
           source_dir: source_dir,
@@ -40,7 +42,8 @@ module Docs
       config['theme'] = 'material'
       config['strict'] = true
       config['use_directory_urls'] = false
-      config['markdown_extensions'] = ['codehilite']
+      (config['markdown_extensions'] ||= []).push('codehilite').uniq!
+      (config['extra_javascript'] ||= []).push('https://cdnjs.cloudflare.com/ajax/libs/mermaid/7.1.2/mermaid.min.js').uniq!
       config['nav'] = generate_nav
       File.write(config_file, "# Example: https://github.com/squidfunk/mkdocs-material/blob/master/mkdocs.yml\n" + YAML.dump(config))
     end
@@ -62,7 +65,11 @@ module Docs
       warn "Converting #{path} => #{new_path}"
       new_contents = contents
                      .gsub(%r{<a\s+id\s*=\s*.*?>.*?</a>}i, '')
-                     .gsub(/(\(.*?\.html.*?\))/) do |match|
+                     .gsub(/<%\s+mermaid_diagram\s+do\s+%>.*?<%\s+end\s+%>/m) do |match|
+                       mermaid_diagram = match.match(/<%\s+mermaid_diagram\s+do\s+%>(.*?)<%\s+end\s+%>/m)[1]
+                       ['<div class="mermaid">', mermaid_diagram.strip, '</div>'].join("\n")
+                     end.gsub(/(\(.*?\.html.*?\))/) do |match|
+
                        if URI.parse(match[1..-2]).relative?
                          match.gsub('.html', '.md')
                        else
@@ -71,12 +78,11 @@ module Docs
                      end.gsub(/<%=\s+partial\s+['"].*?['"]\s+%>/i) do |match|
         filename = match.match(/['"](.*?)['"]/)[1]
         partial_path = File.join(File.dirname(filename), "_#{File.basename filename}")
-        Document.new(
-          path: File.join(File.dirname(path), "#{partial_path}.html.md.erb"),
-          source_dir: source_dir,
-          output_dir: output_dir
-        ).write!
-        %({% include "#{partial_path}.md" %})
+        if filename.include?('.')
+          %({% include "#{partial_path}" %})
+        else
+          %({% include "#{partial_path}.md" %})
+        end
       end
       warn_erb new_contents
       FileUtils.mkdir_p(File.dirname(new_path))
@@ -91,7 +97,9 @@ module Docs
       relative = File.dirname(path).gsub(source_dir, '')
       @new_path ||= File.join(
         output_dir, 'docs', relative, File.basename(path)
-      ).gsub!('.html.md.erb', '.md')
+      )
+        .gsub('.html.md.erb', '.md')
+        .gsub('.mmd.erb', '.mmd')
     end
 
     private

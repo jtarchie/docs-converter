@@ -15,6 +15,10 @@ opts_parser = OptionParser.new do |opts|
   opts.on('-o', '--output-dir DIRECTORY', 'output directory to place mkdocs site into') do |v|
     options[:output_dir] = v
   end
+
+  opts.on('-m', '--sitemap-path [PATH]', 'path to the sitemap path') do |v|
+    options[:sitemap_path] = v
+  end
 end
 
 opts_parser.parse!
@@ -27,7 +31,8 @@ warn 'starting conversion from Pivotal docs to mkdocs site'
 warn "  source: #{options.fetch(:source_dir)}"
 warn "  output: #{options.fetch(:output_dir)}"
 
-Convert.new(
+Docs::Convert.new(
   source_dir: options[:source_dir],
-  output_dir: options[:output_dir]
+  output_dir: options[:output_dir],
+  sitemap_path: options[:sitemap_path]
 ).execute!
