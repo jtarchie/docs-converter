@@ -1,0 +1,33 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require 'optparse'
+require_relative '../lib/convert'
+
+options = {}
+opts_parser = OptionParser.new do |opts|
+  opts.banner = 'Usage: convert [options]'
+
+  opts.on('-s', '--source-dir DIRECTORY', 'source directory of the markdown documents (ie doc-content)') do |v|
+    options[:source_dir] = v
+  end
+
+  opts.on('-o', '--output-dir DIRECTORY', 'output directory to place mkdocs site into') do |v|
+    options[:output_dir] = v
+  end
+end
+
+opts_parser.parse!
+if options.keys.length < 2
+  puts opts_parser
+  exit
+end
+
+warn 'starting conversion from Pivotal docs to mkdocs site'
+warn "  source: #{options.fetch(:source_dir)}"
+warn "  output: #{options.fetch(:output_dir)}"
+
+Convert.new(
+  source_dir: options[:source_dir],
+  output_dir: options[:output_dir]
+).execute!
