@@ -82,6 +82,11 @@ RSpec.describe 'when running the converter' do
       File.write(File.join(source_dir, 'testing.html.md.erb'), 'testing')
       expect(convert_docs).to be_truthy
     end
+
+    it 'gives a warning if unsupported ERB is present' do
+      doc = create_doc "<%= 'Line 1' %>\n# testing\n<%= '3' %>"
+      expect { convert_docs }.to output(/WARNING: ERB found in #{doc.path} at line 1/).to_stderr
+    end
   end
 
   context 'with the mkdocs.yml' do

@@ -15,21 +15,8 @@ module Docs
           output_dir: output_dir
         ).write!
       end
-      config_file = File.join(output_dir, 'mkdocs.yml')
-      config = YAML.load_file config_file
-      config['theme'] = 'material'
-      config['strict'] = true
-      config['use_directory_urls'] = false
-      config['markdown_extensions'] = ['codehilite']
-      config['nav'] = generate_nav
-
-      File.write(config_file, "# Example: https://github.com/squidfunk/mkdocs-material/blob/master/mkdocs.yml\n" + YAML.dump(config))
-      requirements_file = File.join(output_dir, 'requirements.txt')
-      File.write(requirements_file, [
-        'mkdocs',
-        'mkdocs-material',
-        'pygments'
-      ].join("\n"))
+      write_mkdocs_config
+      write_requirements
       Dir.chdir(output_dir) do
         system('pip install -r requirements.txt')
         system('mkdocs build -s')
@@ -37,6 +24,26 @@ module Docs
     end
 
     private
+
+    def write_requirements
+      requirements_file = File.join(output_dir, 'requirements.txt')
+      File.write(requirements_file, [
+        'mkdocs',
+        'mkdocs-material',
+        'pygments'
+      ].join("\n"))
+    end
+
+    def write_mkdocs_config
+      config_file = File.join(output_dir, 'mkdocs.yml')
+      config = YAML.load_file config_file
+      config['theme'] = 'material'
+      config['strict'] = true
+      config['use_directory_urls'] = false
+      config['markdown_extensions'] = ['codehilite']
+      config['nav'] = generate_nav
+      File.write(config_file, "# Example: https://github.com/squidfunk/mkdocs-material/blob/master/mkdocs.yml\n" + YAML.dump(config))
+    end
 
     def generate_nav
       return [] unless sitemap_path
@@ -71,6 +78,7 @@ module Docs
         ).write!
         %({% include "#{partial_path}.md" %})
       end
+      warn_erb new_contents
       FileUtils.mkdir_p(File.dirname(new_path))
       File.write(new_path, new_contents)
     end
@@ -84,6 +92,18 @@ module Docs
       @new_path ||= File.join(
         output_dir, 'docs', relative, File.basename(path)
       ).gsub!('.html.md.erb', '.md')
+    end
+
+    private
+
+    def warn_erb(contents)
+      return unless contents.include?('<%')
+
+      contents.lines.each_with_index do |line, num|
+        if line.include? '<%'
+          warn "WARNING: ERB found in #{path} at line #{num + 1}"
+        end
+      end
     end
   end
 end
