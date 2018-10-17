@@ -94,7 +94,7 @@ module Docs
     end
 
     def new_path
-      relative = File.dirname(path).gsub(source_dir, '')
+      relative = File.dirname(path).gsub(source_dir.chomp('/'), '')
       @new_path ||= File.join(
         output_dir, 'docs', relative, File.basename(path)
       )
