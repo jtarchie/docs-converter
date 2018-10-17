@@ -61,15 +61,24 @@ module Docs
   end
 
   Document = Struct.new(:path, :source_dir, :output_dir, keyword_init: true) do
+    MERMAID_REGEX = /<%\s+mermaid_diagram\s+do\s+%>(.*?)<%\s+end\s+%>/m
+    LINKS_REGEX = /(\(.*?\.html.*?\))/
+    FOOTER_LINKS_REGEX = /^\[.*?\]:\s+(.*?)$/
+
     def write!
       warn "Converting #{path} => #{new_path}"
       new_contents = contents
                      .gsub(%r{<a\s+id\s*=\s*.*?>.*?</a>}i, '')
-                     .gsub(/<%\s+mermaid_diagram\s+do\s+%>.*?<%\s+end\s+%>/m) do |match|
-                       mermaid_diagram = match.match(/<%\s+mermaid_diagram\s+do\s+%>(.*?)<%\s+end\s+%>/m)[1]
+                     .gsub(MERMAID_REGEX) do |match|
+                       mermaid_diagram = match.match(MERMAID_REGEX)[1]
                        ['<div class="mermaid">', mermaid_diagram.strip, '</div>'].join("\n")
-                     end.gsub(/(\(.*?\.html.*?\))/) do |match|
-
+                     end.gsub(FOOTER_LINKS_REGEX) do |match|
+                       if URI.parse(match.match(FOOTER_LINKS_REGEX)[1]).relative?
+                         match.gsub('.html', '.md')
+                       else
+                         match
+                                      end
+                     end.gsub(LINKS_REGEX) do |match|
                        if URI.parse(match[1..-2]).relative?
                          match.gsub('.html', '.md')
                        else
@@ -98,8 +107,8 @@ module Docs
       @new_path ||= File.join(
         output_dir, 'docs', relative, File.basename(path)
       )
-        .gsub('.html.md.erb', '.md')
-        .gsub('.mmd.erb', '.mmd')
+                        .gsub('.html.md.erb', '.md')
+                        .gsub('.mmd.erb', '.mmd')
     end
 
     private

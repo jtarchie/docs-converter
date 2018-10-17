@@ -77,10 +77,10 @@ RSpec.describe 'when running the converter' do
     end
 
     it 'converts relative html links to relative md' do
-      doc = create_doc '[a](testing.html#something) or [b](http://example.com/index.html)'
+      doc = create_doc "[a](testing.html#something) or [b](http://example.com/index.html) or\n[c]: ./c.html"
       expect(convert_docs).to be_falsy
 
-      expect(doc.contents).to eq '[a](testing.md#something) or [b](http://example.com/index.html)'
+      expect(doc.contents).to eq "[a](testing.md#something) or [b](http://example.com/index.html) or\n[c]: ./c.md"
       File.write(File.join(source_dir, 'testing.html.md.erb'), 'testing')
       expect(convert_docs).to be_truthy
     end
