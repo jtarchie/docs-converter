@@ -1,4 +1,5 @@
 require 'fileutils'
+require 'yaml'
 
 module Docs
   Convert = Struct.new(:source_dir, :output_dir, keyword_init: true) do
@@ -11,7 +12,14 @@ module Docs
           output_dir: output_dir
         ).write!
       end
+      config_file = File.join(output_dir, 'mkdocs.yml')
+      config = YAML.load_file config_file
+      config['theme'] = 'material'
+      File.write(config_file, YAML.dump(config))
+      requirements_file = File.join(output_dir, 'requirements.txt')
+      File.write(requirements_file, ['mkdocs', 'mkdocs-material'].join("\n"))
       Dir.chdir(output_dir) do
+        system('pip install -r requirements.txt')
         system('mkdocs build -s')
       end
     end

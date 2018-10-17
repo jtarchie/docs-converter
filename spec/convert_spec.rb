@@ -2,6 +2,7 @@ require 'fileutils'
 require 'securerandom'
 require 'spec_helper'
 require 'tmpdir'
+require 'yaml'
 
 RSpec.describe 'when running the converter' do
   let(:source_dir) { Dir.mktmpdir }
@@ -51,29 +52,45 @@ RSpec.describe 'when running the converter' do
     ).execute!
   end
 
-  it 'handles removings a[id]' do
-    doc = create_doc '#<a id="testing"></a> testing'
-    expect(convert_docs).to be_truthy
+  context 'with markdown docs' do
+    it 'handles removings a[id]' do
+      doc = create_doc '#<a id="testing"></a> testing'
+      expect(convert_docs).to be_truthy
 
-    expect(doc.contents).to eq '# testing'
-    expect(File.exist?(doc.new_path)).to be_truthy
+      expect(doc.contents).to eq '# testing'
+      expect(File.exist?(doc.new_path)).to be_truthy
+    end
+
+    it 'converts partials to {%include%}' do
+      doc = create_doc '<%= partial "testing/some_file" %>'
+      partial = create_partial 'testing/_some_file'
+      expect(convert_docs).to be_truthy
+
+      expect(doc.contents).to eq '{% include "testing/_some_file.md" %}'
+      expect(File.exist?(partial.new_path)).to be_truthy
+    end
+
+    it 'converts relative html links to relative md' do
+      doc = create_doc '[a](testing.html#something) or [b](http://example.com/index.html)'
+      expect(convert_docs).to be_falsy
+
+      expect(doc.contents).to eq '[a](testing.md#something) or [b](http://example.com/index.html)'
+      File.write(File.join(source_dir, 'testing.html.md.erb'), 'testing')
+      expect(convert_docs).to be_truthy
+    end
   end
 
-  it 'converts partials to {%include%}' do
-    doc = create_doc '<%= partial "testing/some_file" %>'
-    partial = create_partial 'testing/_some_file'
-    expect(convert_docs).to be_truthy
+  context 'with the mkdocs.yml' do
+    let(:config) { YAML.load_file File.join(output_dir, 'mkdocs.yml') }
+    let(:requirements) { File.read File.join(output_dir, 'requirements.txt') }
 
-    expect(doc.contents).to eq '{% include "testing/_some_file.md" %}'
-    expect(File.exist?(partial.new_path)).to be_truthy
-  end
+    before(:each) do
+      expect(convert_docs).to be_truthy
+    end
 
-  it 'converts relative html links to relative md' do
-    doc = create_doc '[a](testing.html#something) or [b](http://example.com/index.html)'
-    expect(convert_docs).to be_falsy
-
-    expect(doc.contents).to eq '[a](testing.md#something) or [b](http://example.com/index.html)'
-    File.write(File.join(source_dir, 'testing.html.md.erb'), 'testing')
-    expect(convert_docs).to be_truthy
+    it 'uses material view' do
+      expect(config['theme']).to eq 'material'
+      expect(requirements).to include 'mkdocs-material'
+    end
   end
 end
