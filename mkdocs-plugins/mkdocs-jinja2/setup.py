@@ -10,7 +10,7 @@ setup(
     install_requires=[],
     entry_points={
         'mkdocs.plugins': [
-            'jinja2 = mkdocs_jinja:JinjaMkDocPlugin',
+            'jinja2 = mkdocs_jinja2:JinjaMkDocPlugin',
         ]
     }
 )
