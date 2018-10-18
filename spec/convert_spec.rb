@@ -104,13 +104,16 @@ RSpec.describe 'when running the converter' do
   context 'with the mkdocs.yml' do
     let(:requirements) { File.read File.join(output_dir, 'requirements.txt') }
 
-    it 'uses material view' do
+    it 'uses material view and sane defaults' do
       expect(convert_docs).to be_truthy
       expect(config['theme']).to eq 'material'
       expect(requirements).to include 'mkdocs-material'
 
       expect(config['strict']).to eq true
       expect(config['use_directory_urls']).to eq false
+
+      expect(config['plugins']).to include 'jinja2'
+      expect(requirements).to include 'git+https://github.com/jtarchie/docs-converter.git#egg=mkdocs-jinja2&subdirectory=mkdocs-plugins/mkdocs-jinja2'
     end
 
     it 'has allows syntax highlighting like github' do

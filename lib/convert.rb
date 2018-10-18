@@ -32,7 +32,8 @@ module Docs
       File.write(requirements_file, [
         'mkdocs',
         'mkdocs-material',
-        'pygments'
+        'pygments',
+        'git+https://github.com/jtarchie/docs-converter.git#egg=mkdocs-jinja2&subdirectory=mkdocs-plugins/mkdocs-jinja2'
       ].join("\n"))
     end
 
@@ -42,6 +43,7 @@ module Docs
       config['theme'] = 'material'
       config['strict'] = true
       config['use_directory_urls'] = false
+      (config['plugins'] ||= []).push('jinja2').uniq!
       (config['markdown_extensions'] ||= []).push('codehilite').uniq!
       (config['extra_javascript'] ||= []).push('https://cdnjs.cloudflare.com/ajax/libs/mermaid/7.1.2/mermaid.min.js').uniq!
       config['nav'] = generate_nav
