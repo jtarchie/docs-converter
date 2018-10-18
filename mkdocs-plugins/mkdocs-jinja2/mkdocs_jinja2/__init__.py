@@ -4,6 +4,6 @@ from mkdocs.plugins import BasePlugin
 from jinja2 import Environment, FileSystemLoader
 
 class JinjaMkDocPlugin(BasePlugin):
-    def on_page_markdown(self, markdown, page, config, _):
+    def on_page_markdown(self, markdown, page, config, files):
         env = Environment(loader=FileSystemLoader(config['docs_dir']))
         return env.from_string(markdown).render(config=config)
