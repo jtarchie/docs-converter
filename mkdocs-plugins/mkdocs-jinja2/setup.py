@@ -2,7 +2,7 @@ from distutils.core import setup
 
 setup(
     name='mkdocs-jinja2',
-    version='0.0.0',
+    version='0.0.1',
     author='JT Archie',
     author_email='jarchie@pivotal',
     packages=['mkdocs_jinja2'],
