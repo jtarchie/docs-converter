@@ -66,41 +66,17 @@ module Docs
     MERMAID_REGEX = /<%\s+mermaid_diagram\s+do\s+%>(.*?)<%\s+end\s+%>/m
     LINKS_REGEX = /(\(.*?\.html.*?\))/
     FOOTER_LINKS_REGEX = /^\[.*?\]:\s+(.*?)$/
+    PARTIAL_REGEX = /<%=\s+partial\s+['"].*?['"]\s+%>/i
+    ANCHOR_REGEX = %r{<a\s+id\s*=\s*.*?>.*?</a>}i
 
     def write!
       warn "Converting #{path} => #{new_path}"
       new_contents = contents
-                     .gsub(%r{<a\s+id\s*=\s*.*?>.*?</a>}i, '')
-                     .gsub(MERMAID_REGEX) do |match|
-                       mermaid_diagram = match.match(MERMAID_REGEX)[1]
-                       ['<div class="mermaid">', mermaid_diagram.strip, '</div>'].join("\n")
-                     end.gsub(FOOTER_LINKS_REGEX) do |match|
-                       if URI.parse(match.match(FOOTER_LINKS_REGEX)[1]).relative?
-                         match.gsub('.html', '.md')
-                       else
-                         match
-                                      end
-                     end.gsub(LINKS_REGEX) do |match|
-                       if URI.parse(match[1..-2]).relative?
-                         match.gsub('.html', '.md')
-                       else
-                         match
-                       end
-                     end.gsub(/<%=\s+partial\s+['"].*?['"]\s+%>/i) do |match|
-        filename = match.match(/['"](.*?)['"]/)[1]
-        partial_path = [
-          File.join(File.dirname(filename), "_#{File.basename filename}"),
-          File.join(File.dirname(filename), (File.basename filename).to_s)
-        ].find do |p|
-          !Dir[File.join(File.dirname(path), "#{p}*")].empty?
-        end
-
-        if filename.include?('.')
-          %({% include "#{partial_path}" %})
-        else
-          %({% include "#{partial_path}.md" %})
-        end
-      end
+                     .gsub(ANCHOR_REGEX, '')
+                     .gsub(MERMAID_REGEX, &method(:cleanup_mermaid))
+                     .gsub(FOOTER_LINKS_REGEX, &method(:cleanup_footer))
+                     .gsub(LINKS_REGEX, &method(:cleanup_links))
+                     .gsub(PARTIAL_REGEX, &method(:cleanup_partials))
       warn_erb new_contents
       FileUtils.mkdir_p(File.dirname(new_path))
       File.write(new_path, new_contents)
@@ -120,6 +96,43 @@ module Docs
     end
 
     private
+
+    def cleanup_partials(match)
+      filename = match.match(/['"](.*?)['"]/)[1]
+      partial_path = [
+        File.join(File.dirname(filename), "_#{File.basename filename}"),
+        File.join(File.dirname(filename), (File.basename filename).to_s)
+      ].find do |p|
+        !Dir[File.join(File.dirname(path), "#{p}*")].empty?
+      end
+
+      if filename.include?('.')
+        %({% include "#{partial_path}" %})
+      else
+        %({% include "#{partial_path}.md" %})
+      end
+    end
+
+    def cleanup_links(match)
+      if URI.parse(match[1..-2]).relative?
+        match.gsub('.html', '.md')
+      else
+        match
+      end
+    end
+
+    def cleanup_mermaid(match)
+      mermaid_diagram = match.match(MERMAID_REGEX)[1]
+      ['<div class="mermaid">', mermaid_diagram.strip, '</div>'].join("\n")
+    end
+
+    def cleanup_footer(match)
+      if URI.parse(match.match(FOOTER_LINKS_REGEX)[1]).relative?
+        match.gsub('.html', '.md')
+      else
+        match
+      end
+    end
 
     def warn_erb(contents)
       return unless contents.include?('<%')
