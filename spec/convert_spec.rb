@@ -68,12 +68,24 @@ RSpec.describe 'when running the converter' do
     end
 
     it 'converts partials to {%include%}' do
-      doc = create_doc '<%= partial "testing/some_file" %>'
+      doc1 = create_doc '<%= partial "testing/some_file" %>'
+      doc2 = create_doc '<%= partial "testing/_some_file" %>'
       partial = create_partial 'testing/_some_file'
       expect(convert_docs).to be_truthy
 
-      expect(doc.contents).to eq '{% include "testing/_some_file.md" %}'
+      expect(doc1.contents).to eq '{% include "testing/_some_file.md" %}'
+      expect(doc2.contents).to eq '{% include "testing/_some_file.md" %}'
       expect(File.exist?(partial.new_path)).to be_truthy
+    end
+
+    it 'converts partials that do not have an underscore' do
+      doc = create_doc '<%= partial "testing/some_file" %>'
+      partial = create_partial 'testing/some_file'
+      expect(convert_docs).to be_truthy
+
+      expect(doc.contents).to eq '{% include "testing/some_file.md" %}'
+      expect(File.exist?(partial.new_path)).to be_truthy
+
     end
 
     it 'converts relative html links to relative md' do

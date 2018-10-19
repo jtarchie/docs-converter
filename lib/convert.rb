@@ -88,7 +88,13 @@ module Docs
                        end
                      end.gsub(/<%=\s+partial\s+['"].*?['"]\s+%>/i) do |match|
         filename = match.match(/['"](.*?)['"]/)[1]
-        partial_path = File.join(File.dirname(filename), "_#{File.basename filename}")
+        partial_path = [
+            File.join(File.dirname(filename), "_#{File.basename filename}"),
+            File.join(File.dirname(filename), "#{File.basename filename}")
+        ].find do |p|
+          Dir[File.join(File.dirname(path), "#{p}*")].length > 0
+        end
+
         if filename.include?('.')
           %({% include "#{partial_path}" %})
         else
