@@ -85,7 +85,6 @@ RSpec.describe 'when running the converter' do
 
       expect(doc.contents).to eq '{% include "testing/some_file.md" %}'
       expect(File.exist?(partial.new_path)).to be_truthy
-
     end
 
     it 'converts relative html links to relative md' do
