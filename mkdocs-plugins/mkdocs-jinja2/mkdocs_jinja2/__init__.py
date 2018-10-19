@@ -7,7 +7,6 @@ import os
 import re
 
 
-'''
 class CodeSnippetExtension(Extension):
     tags = {'code_snippet'}
 
@@ -37,9 +36,11 @@ class CodeSnippetExtension(Extension):
         else:
             raise Exception('Dependent section "%s" not defined in mkdocs.yml' % (repo_name))
 
-'''
 
 class JinjaMkDocPlugin(plugins.BasePlugin):
     def on_page_markdown(self, markdown, page, config, files):
-        env = Environment(loader=FileSystemLoader(config['docs_dir']))
+        env = Environment(
+            loader=FileSystemLoader(config['docs_dir']),
+            extensions=[CodeSnippetExtension]
+            )
         return env.from_string(markdown).render(config=config)

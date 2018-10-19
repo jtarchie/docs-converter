@@ -10,13 +10,14 @@ RSpec.describe 'mkdocs plugins' do
   let(:plugin_dir) { File.expand_path(File.join(__dir__, '..', 'mkdocs-plugins', 'mkdocs-jinja2')) }
 
   context 'with jinja2 support' do
-    def create_docs
+    def create_docs(additional_config = {})
       system("mkdocs new #{output_dir}")
       File.write(File.join(output_dir, 'requirements.txt'), "file://#{plugin_dir}?egg=mkdocs-jinja2")
       config_file = File.join(output_dir, 'mkdocs.yml')
       config = YAML.load_file(config_file)
-      config['plugins'] = ['jinja2']
+      config['plugins'] ||= ['jinja2']
       config['use_directory_urls'] = false
+      config.merge!(additional_config)
       File.write(config_file, YAML.dump(config))
     end
 
@@ -46,6 +47,33 @@ RSpec.describe 'mkdocs plugins' do
       create_site
 
       expect(read_doc('test.html')).to include 'a header: appears'
+    end
+
+    context 'with code snippets' do
+      let(:repo_dir) { Dir.mktmpdir }
+
+      fit 'supports code snippets from another directory' do
+        create_docs(
+            'dependent_sections' => {
+                'repo-name' => "file://#{repo_dir}"
+            }
+        )
+
+        Dir.chdir(repo_dir) do
+          system('git init')
+          File.write('testing.go', <<-SNIPPET)
+          # code_snippet snippet-name start yaml
+          some: yaml
+          # code_snippet snippet-name end
+          SNIPPET
+          system('git add -A && git commit -mok')
+        end
+
+        write_doc 'test.md', "code here: {% code_snippet 'repo-name' 'snippet-name' %}"
+        create_site
+
+        expect(read_doc('test.html')).to include("```yaml\nsome: yaml\n```")
+      end
     end
   end
 end
