@@ -52,27 +52,27 @@ RSpec.describe 'mkdocs plugins' do
     context 'with code snippets' do
       let(:repo_dir) { Dir.mktmpdir }
 
-      fit 'supports code snippets from another directory' do
+      it 'supports code snippets from another directory' do
         create_docs(
-            'dependent_sections' => {
-                'repo-name' => "file://#{repo_dir}"
-            }
+          'dependent_sections' => {
+            'repo-name' => repo_dir
+          }
         )
 
         Dir.chdir(repo_dir) do
           system('git init')
-          File.write('testing.go', <<-SNIPPET)
-          # code_snippet snippet-name start yaml
-          some: yaml
-          # code_snippet snippet-name end
+          File.write('testing.go', <<~SNIPPET)
+            # code_snippet snippet-name start yaml
+            some: yaml
+            # code_snippet snippet-name end
           SNIPPET
           system('git add -A && git commit -mok')
         end
 
-        write_doc 'test.md', "code here: {% code_snippet 'repo-name' 'snippet-name' %}"
+        write_doc 'test.md', "code here: {% code_snippet 'repo-name', 'snippet-name' %}"
         create_site
 
-        expect(read_doc('test.html')).to include("```yaml\nsome: yaml\n```")
+        expect(read_doc('test.html')).to include("<code>yaml\nsome: yaml</code>")
       end
     end
   end
