@@ -51,6 +51,7 @@ RSpec.describe 'when running the converter' do
   end
 
   def convert_docs(sitemap_path: nil)
+    system('pip uninstall --yes mkdocs-jinja2')
     Docs::Convert.new(
       source_dir: source_dir,
       output_dir: output_dir,
@@ -110,6 +111,25 @@ RSpec.describe 'when running the converter' do
       expect(doc.contents).to eq "<div class=\"mermaid\">\nsome mermaid stuff\n</div>"
       expect(config['extra_javascript']).to include /mermaid.min.js/
     end
+
+    fit 'converts code snippets to use the correct jinja extension' do
+      repo_dir = File.expand_path(File.join(File.dirname(output_dir), 'repo'))
+      FileUtils.mkdir_p(repo_dir)
+      Dir.chdir(repo_dir) do
+        system('git init')
+        File.write('testing.go', <<~SNIPPET)
+          # code_snippet snippet-name start yaml
+          some: yaml
+          # code_snippet snippet-name end
+        SNIPPET
+        system('git add -A && git commit -mok')
+      end
+
+      doc = create_doc 'code: <%= yield_for_code_snippet from: "org/repo", at: "snippet-name" %>'
+      expect(convert_docs).to be_truthy
+      expect(config['plugins'].first['jinja2']['dependent_sections']).to include('org/repo' => '../repo')
+      expect(doc.contents).to eq "code: {% code_snippet 'org/repo', 'snippet-name' %}"
+    end
   end
 
   context 'with the mkdocs.yml' do
@@ -123,7 +143,7 @@ RSpec.describe 'when running the converter' do
       expect(config['strict']).to eq true
       expect(config['use_directory_urls']).to eq false
 
-      expect(config['plugins']).to include 'jinja2'
+      expect(config['plugins']).to include('jinja2' => { 'dependent_sections' => [] })
       expect(requirements).to include 'git+https://github.com/jtarchie/docs-converter.git#egg=mkdocs-jinja2&subdirectory=mkdocs-plugins/mkdocs-jinja2'
     end
 

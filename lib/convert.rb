@@ -8,16 +8,20 @@ module Docs
   Convert = Struct.new(:source_dir, :output_dir, :sitemap_path, keyword_init: true) do
     def execute!
       system("mkdocs new #{output_dir}")
+      dependent_sections = {}
       Dir[File.join(source_dir, '**', '*')].each do |filename|
         next if File.directory?(filename)
 
-        Document.new(
+        doc = Document.new(
           path: filename,
           source_dir: source_dir,
           output_dir: output_dir
-        ).write!
+        )
+        doc.write!
+
+        dependent_sections.merge!(doc.dependent_sections)
       end
-      write_mkdocs_config
+      write_mkdocs_config(dependent_sections: dependent_sections)
       write_requirements
       Dir.chdir(output_dir) do
         system('pip install -r requirements.txt')
@@ -37,13 +41,15 @@ module Docs
       ].join("\n"))
     end
 
-    def write_mkdocs_config
+    def write_mkdocs_config(dependent_sections: {})
       config_file = File.join(output_dir, 'mkdocs.yml')
       config = YAML.load_file config_file
       config['theme'] = 'material'
       config['strict'] = true
       config['use_directory_urls'] = false
-      (config['plugins'] ||= []).push('jinja2').uniq!
+      (config['plugins'] ||= []).push('jinja2' => {
+                                        'dependent_sections' => dependent_sections
+                                      }).uniq!
       (config['markdown_extensions'] ||= []).push('codehilite').uniq!
       (config['extra_javascript'] ||= []).push('https://cdnjs.cloudflare.com/ajax/libs/mermaid/7.1.2/mermaid.min.js').uniq!
       config['nav'] = generate_nav
@@ -63,13 +69,17 @@ module Docs
   end
 
   Document = Struct.new(:path, :source_dir, :output_dir, keyword_init: true) do
+    attr_reader :dependent_sections
+
     MERMAID_REGEX = /<%\s+mermaid_diagram\s+do\s+%>(.*?)<%\s+end\s+%>/m
     LINKS_REGEX = /(\(.*?\.html.*?\))/
     FOOTER_LINKS_REGEX = /^\[.*?\]:\s+(.*?)$/
     PARTIAL_REGEX = /<%=\s+partial\s+['"].*?['"]\s+%>/i
     ANCHOR_REGEX = %r{<a\s+id\s*=\s*.*?>.*?</a>}i
+    CODE_SNIPPET_REGEX = /<%=\s+yield_for_code_snippet\s+from:\s*['"](.*?)['"].*at:\s*['"](.*?)['"].*?%>/i
 
     def write!
+      @dependent_sections ||= {}
       warn "Converting #{path} => #{new_path}"
       new_contents = contents
                      .gsub(ANCHOR_REGEX, '')
@@ -77,6 +87,7 @@ module Docs
                      .gsub(FOOTER_LINKS_REGEX, &method(:cleanup_footer))
                      .gsub(LINKS_REGEX, &method(:cleanup_links))
                      .gsub(PARTIAL_REGEX, &method(:cleanup_partials))
+                     .gsub(CODE_SNIPPET_REGEX, &method(:cleanup_code_snippet))
       warn_erb new_contents
       FileUtils.mkdir_p(File.dirname(new_path))
       File.write(new_path, new_contents)
@@ -96,6 +107,12 @@ module Docs
     end
 
     private
+
+    def cleanup_code_snippet(match)
+      _, from, at = *match.match(CODE_SNIPPET_REGEX)
+      @dependent_sections[from] = File.join('..', from.split('/').last)
+      "{% code_snippet '#{from}', '#{at}' %}"
+    end
 
     def cleanup_partials(match)
       filename = match.match(/['"](.*?)['"]/)[1]

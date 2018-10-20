@@ -15,7 +15,7 @@ RSpec.describe 'mkdocs plugins' do
       File.write(File.join(output_dir, 'requirements.txt'), "file://#{plugin_dir}?egg=mkdocs-jinja2")
       config_file = File.join(output_dir, 'mkdocs.yml')
       config = YAML.load_file(config_file)
-      config['plugins'] ||= [{'jinja2' => additional_config}]
+      config['plugins'] ||= [{ 'jinja2' => additional_config }]
       config['use_directory_urls'] = false
       File.write(config_file, YAML.dump(config))
     end
