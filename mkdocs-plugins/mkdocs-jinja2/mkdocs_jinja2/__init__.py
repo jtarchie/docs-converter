@@ -36,6 +36,7 @@ class CodeSnippetExtension(Extension):
             regex = re.compile(r'.*code_snippet %s start (\w+)\n(.*)\n.*?code_snippet %s end' % (re.escape(code_name), re.escape(code_name)), re.MULTILINE | re.DOTALL)
             name = ''
             try:
+                # this uses `ag` as searching across files is not something we need to reprogram
                 output = subprocess.check_output(['ag', '--files-with-matches', '--silent', '--one-device', '-i', '--max-count', '1', 'code_snippet %s start' % code_name, root])
                 name = output.splitlines()[0]
             except subprocess.CalledProcessError as e:
