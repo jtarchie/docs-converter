@@ -47,7 +47,7 @@ class CodeSnippetExtension(Extension):
                 matches = regex.search(f.read())
                 if matches is not None:
                     return("""```%s\n%s\n```""" % (matches.group(1), matches.group(2)))
-            raise TemplateRuntimeError("could not find code snippet %s under repo %s\n" % (code_name, repo_name))
+            raise TemplateRuntimeError('could not find code snippet "%s" under repo "%s" -- please check "ag" for existance or ".gitignore"' % (code_name, repo_name))
         else:
             raise TemplateRuntimeError('dependent section "%s" not defined in mkdocs.yml' % (repo_name))
 
