@@ -112,7 +112,7 @@ RSpec.describe 'when running the converter' do
       expect(config['extra_javascript']).to include /mermaid.min.js/
     end
 
-    fit 'converts code snippets to use the correct jinja extension' do
+    it 'converts code snippets to use the correct jinja extension' do
       repo_dir = File.expand_path(File.join(File.dirname(output_dir), 'repo'))
       FileUtils.mkdir_p(repo_dir)
       Dir.chdir(repo_dir) do
@@ -143,7 +143,7 @@ RSpec.describe 'when running the converter' do
       expect(config['strict']).to eq true
       expect(config['use_directory_urls']).to eq false
 
-      expect(config['plugins']).to include('jinja2' => { 'dependent_sections' => [] })
+      expect(config['plugins']).to include('jinja2' => { 'dependent_sections' => {} })
       expect(requirements).to include 'git+https://github.com/jtarchie/docs-converter.git#egg=mkdocs-jinja2&subdirectory=mkdocs-plugins/mkdocs-jinja2'
     end
 

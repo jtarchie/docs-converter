@@ -6,6 +6,7 @@ from mkdocs import plugins, config
 import os
 import re
 import sys
+import subprocess
 
 
 class CodeSnippetExtension(Extension):
@@ -31,18 +32,21 @@ class CodeSnippetExtension(Extension):
     def _code_snippet(self, repo_name, code_name):
         if self.environment.dependent_sections.get(repo_name):
             repo = self.environment.dependent_sections[repo_name]
-            exclude_dirs = {'.git'}
+            root = os.path.abspath(repo)
             regex = re.compile(r'.*code_snippet %s start (\w+)\n(.*)\n.*?code_snippet %s end' % (re.escape(code_name), re.escape(code_name)), re.MULTILINE | re.DOTALL)
-
-            for root, dirs, files in os.walk(repo, topdown=True):
-                dirs[:] = [d for d in dirs if d not in exclude_dirs]
-                dirs[:] = [d for d in dirs if not d[0] == '.']
-                for name in files:
-                    path = os.path.join(root, name)
-                    f = open(path, 'r')
-                    matches = regex.search(f.read())
-                    if matches is not None:
-                        return("""```%s\n%s\n```""" % (matches.group(1), matches.group(2)))
+            name = ''
+            try:
+                output = subprocess.check_output(['ag', '--files-with-matches', '--silent', '--one-device', '-i', '--max-count', '1', 'code_snippet %s start' % code_name, root])
+                name = output.splitlines()[0]
+            except subprocess.CalledProcessError as e:
+                name = ''
+            print('name: %s' % name)
+            if name != "":
+                path = os.path.join(root, name)
+                f = open(path, 'r')
+                matches = regex.search(f.read())
+                if matches is not None:
+                    return("""```%s\n%s\n```""" % (matches.group(1), matches.group(2)))
             raise TemplateRuntimeError("could not find code snippet %s under repo %s\n" % (code_name, repo_name))
         else:
             raise TemplateRuntimeError('dependent section "%s" not defined in mkdocs.yml' % (repo_name))
