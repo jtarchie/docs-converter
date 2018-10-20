@@ -1,6 +1,6 @@
 __version__ = '0.0.1'
 
-from jinja2 import Environment, FileSystemLoader, lexer, nodes
+from jinja2 import Environment, FileSystemLoader, lexer, nodes, TemplateRuntimeError
 from jinja2.ext import Extension
 from mkdocs import plugins, config
 import os
@@ -24,19 +24,19 @@ class CodeSnippetExtension(Extension):
         parser.stream.skip_if('comma')
         args.append(parser.parse_expression())
         return nodes.Output([
-            self.call_method('_code_snippet', args)
+            self.call_method('_code_snippet', args, lineno=lineno)
             ], lineno=lineno)
 
 
     def _code_snippet(self, repo_name, code_name):
-        if self.environment.dependent_sections[repo_name]:
+        if self.environment.dependent_sections.get(repo_name):
             repo = self.environment.dependent_sections[repo_name]
             exclude_dirs = {'.git'}
             regex = re.compile(r'.*code_snippet %s start (\w+)\n(.*)\n.*?code_snippet %s end' % (re.escape(code_name), re.escape(code_name)), re.MULTILINE | re.DOTALL)
 
             for root, dirs, files in os.walk(repo, topdown=True):
                 dirs[:] = [d for d in dirs if d not in exclude_dirs]
-
+                dirs[:] = [d for d in dirs if not d[0] == '.']
                 for name in files:
                     path = os.path.join(root, name)
                     f = open(path, 'r')
