@@ -43,10 +43,9 @@ class CodeSnippetExtension(Extension):
                     matches = regex.search(f.read())
                     if matches is not None:
                         return("""```%s\n%s\n```""" % (matches.group(1), matches.group(2)))
-            sys.stderr.write("could not find code snippet %s under repo %s\n" % (code_name, repo_name))
-            raise CouldNotFindSnippet
+            raise TemplateRuntimeError("could not find code snippet %s under repo %s\n" % (code_name, repo_name))
         else:
-            raise Exception('Dependent section "%s" not defined in mkdocs.yml' % (repo_name))
+            raise TemplateRuntimeError('dependent section "%s" not defined in mkdocs.yml' % (repo_name))
 
 
 class JinjaMkDocPlugin(plugins.BasePlugin):
