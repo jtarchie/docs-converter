@@ -2,7 +2,7 @@ __version__ = '0.0.1'
 
 from jinja2 import Environment, FileSystemLoader, lexer, nodes
 from jinja2.ext import Extension
-from mkdocs import plugins
+from mkdocs import plugins, config
 import os
 import re
 import sys
@@ -50,10 +50,15 @@ class CodeSnippetExtension(Extension):
 
 
 class JinjaMkDocPlugin(plugins.BasePlugin):
+    config_scheme = [
+        ('dependent_sections', config.config_options.OptionallyRequired(default=dict()))
+    ]
+
+
     def on_page_markdown(self, markdown, page, config, files):
         env = Environment(
             loader=FileSystemLoader(config['docs_dir']),
             extensions=[CodeSnippetExtension],
             )
-        env.dependent_sections=config.get('dependent_sections', [])
+        env.dependent_sections=self.config['dependent_sections']
         return env.from_string(markdown).render(config=config)
