@@ -44,7 +44,11 @@ module Docs
     def write_mkdocs_config(dependent_sections: {})
       config_file = File.join(output_dir, 'mkdocs.yml')
       config = YAML.load_file config_file
-      config['theme'] = 'material'
+      config['theme'] = {
+        'name' => 'material',
+        'font' => { 'code' => 'Ubuntu Mono', 'text' => 'Source Sans Pro' },
+        'palette' => { 'accent' => 'teal', 'primary' => 'teal' }
+      }
       config['strict'] = true
       config['use_directory_urls'] = false
       (config['plugins'] ||= []).push({ 'jinja2' => {

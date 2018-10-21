@@ -135,9 +135,19 @@ RSpec.describe 'when running the converter' do
   context 'with the mkdocs.yml' do
     let(:requirements) { File.read File.join(output_dir, 'requirements.txt') }
 
-    it 'uses material view and sane defaults' do
+    fit 'uses material view and sane defaults' do
       expect(convert_docs).to be_truthy
-      expect(config['theme']).to eq 'material'
+      expect(config['theme']).to eq(
+        'name' => 'material',
+        'palette' => {
+          'primary' => 'teal',
+          'accent' => 'teal'
+        },
+        'font' => {
+          'text' => 'Source Sans Pro',
+          'code' => 'Ubuntu Mono'
+        }
+      )
       expect(requirements).to include 'mkdocs-material'
 
       expect(config['strict']).to eq true
