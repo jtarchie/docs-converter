@@ -47,9 +47,9 @@ module Docs
       config['theme'] = 'material'
       config['strict'] = true
       config['use_directory_urls'] = false
-      (config['plugins'] ||= []).push({'jinja2' => {
+      (config['plugins'] ||= []).push({ 'jinja2' => {
                                         'dependent_sections' => dependent_sections
-                                      }}, 'search').uniq!
+                                      } }, 'search').uniq!
       (config['markdown_extensions'] ||= []).push('codehilite').uniq!
       (config['extra_javascript'] ||= []).push('https://cdnjs.cloudflare.com/ajax/libs/mermaid/7.1.2/mermaid.min.js').uniq!
       config['nav'] = generate_nav
