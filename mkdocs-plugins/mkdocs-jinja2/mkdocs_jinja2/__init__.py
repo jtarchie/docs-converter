@@ -17,7 +17,7 @@ class CodeSnippetExtension(Extension):
 
     def __init__(self, environment):
         super(CodeSnippetExtension, self).__init__(environment)
-        environment.extend(dependent_sections=[])
+        environment.extend(dependent_sections={}, code_snippets={})
 
     def parse(self, parser):
         lineno = next(parser.stream).lineno
@@ -33,21 +33,29 @@ class CodeSnippetExtension(Extension):
         if self.environment.dependent_sections.get(repo_name):
             repo = self.environment.dependent_sections[repo_name]
             root = os.path.abspath(repo)
-            regex = re.compile(r'.*code_snippet %s start (\w+)\n(.*)\n.*?code_snippet %s end' % (re.escape(code_name), re.escape(code_name)), re.MULTILINE | re.DOTALL)
-            name = ''
-            try:
-                # this uses `rg` as searching across files is not something we need to reprogram
-                output = subprocess.check_output(['rg', '-m', '1', '-l', 'code_snippet %s start' % code_name, root])
-                name = output.splitlines()[0]
-            except subprocess.CalledProcessError as e:
-                name = ''
-            if name != "":
-                path = os.path.join(root, name)
-                f = open(path, 'r')
-                matches = regex.search(f.read())
-                if matches is not None:
-                    return("""```%s\n%s\n```""" % (matches.group(1), matches.group(2)))
-            raise TemplateRuntimeError('could not find code snippet "%s" under repo "%s" -- please check "rg" for existance or ".gitignore"' % (code_name, repo_name))
+
+            if repo_name not in self.environment.code_snippets:
+                snippets = {}
+                names = []
+                try:
+                    # this uses `rg` as searching across files is not something we need to reprogram
+                    output = subprocess.check_output(['rg', '-m', '1', '-l', 'code_snippet [\w-]+ start', root])
+                    names = output.splitlines()
+                except subprocess.CalledProcessError as e:
+                    name = []
+                regex = re.compile(r"""code_snippet ([\w-]+) start (\w+)\n(.*)\n.*?code_snippet \1 end""", re.MULTILINE | re.DOTALL)
+                for name in names:
+                    path = os.path.join(root, name)
+                    f = open(path, 'r')
+                    matches = regex.findall(f.read())
+                    for match in matches:
+                        snippets[match[0]] = """```%s\n%s\n```""" % (match[1], match[2])
+                self.environment.code_snippets[repo_name] = snippets
+
+            if code_name in self.environment.code_snippets[repo_name]:
+                return self.environment.code_snippets[repo_name][code_name]
+
+            raise TemplateRuntimeError('could not find code snippet "%s" under repo "%s" -- please check for "rg" or entry in ".gitignore"' % (code_name, repo_name))
         else:
             raise TemplateRuntimeError('dependent section "%s" not defined in mkdocs.yml' % (repo_name))
 
