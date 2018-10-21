@@ -36,19 +36,18 @@ class CodeSnippetExtension(Extension):
             regex = re.compile(r'.*code_snippet %s start (\w+)\n(.*)\n.*?code_snippet %s end' % (re.escape(code_name), re.escape(code_name)), re.MULTILINE | re.DOTALL)
             name = ''
             try:
-                # this uses `ag` as searching across files is not something we need to reprogram
-                output = subprocess.check_output(['ag', '--files-with-matches', '--silent', '--one-device', '-i', '--max-count', '1', 'code_snippet %s start' % code_name, root])
+                # this uses `rg` as searching across files is not something we need to reprogram
+                output = subprocess.check_output(['rg', '-m', '1', '-l', 'code_snippet %s start' % code_name, root])
                 name = output.splitlines()[0]
             except subprocess.CalledProcessError as e:
                 name = ''
-            print('name: %s' % name)
             if name != "":
                 path = os.path.join(root, name)
                 f = open(path, 'r')
                 matches = regex.search(f.read())
                 if matches is not None:
                     return("""```%s\n%s\n```""" % (matches.group(1), matches.group(2)))
-            raise TemplateRuntimeError('could not find code snippet "%s" under repo "%s" -- please check "ag" for existance or ".gitignore"' % (code_name, repo_name))
+            raise TemplateRuntimeError('could not find code snippet "%s" under repo "%s" -- please check "rg" for existance or ".gitignore"' % (code_name, repo_name))
         else:
             raise TemplateRuntimeError('dependent section "%s" not defined in mkdocs.yml' % (repo_name))
 
