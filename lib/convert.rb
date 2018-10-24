@@ -45,6 +45,7 @@ module Docs
       config_file = File.join(output_dir, 'mkdocs.yml')
       config = YAML.load_file config_file
       config['theme'] = {
+        'logo' => 'https://docs.pivotal.io/images/icon-p-green.jpg',
         'name' => 'material',
         'font' => { 'code' => 'Ubuntu Mono', 'text' => 'Source Sans Pro' },
         'palette' => { 'accent' => 'teal', 'primary' => 'teal' }
@@ -54,7 +55,10 @@ module Docs
       (config['plugins'] ||= []).push({ 'jinja2' => {
                                         'dependent_sections' => dependent_sections
                                       } }, 'search').uniq!
-      (config['markdown_extensions'] ||= []).push('codehilite').uniq!
+      (config['markdown_extensions'] ||= [])
+        .push('codehilite')
+        .push('admonition')
+        .uniq!
       (config['extra_javascript'] ||= []).push('https://cdnjs.cloudflare.com/ajax/libs/mermaid/7.1.2/mermaid.min.js').uniq!
       config['nav'] = generate_nav
       File.write(config_file, "# Example: https://github.com/squidfunk/mkdocs-material/blob/master/mkdocs.yml\n" + YAML.dump(config))
@@ -81,6 +85,7 @@ module Docs
     PARTIAL_REGEX = /<%=\s+partial\s+['"].*?['"]\s+%>/i
     ANCHOR_REGEX = %r{<a\s+id\s*=\s*.*?>.*?</a>}i
     CODE_SNIPPET_REGEX = /<%=\s+yield_for_code_snippet\s+from:\s*['"](.*?)['"].*at:\s*['"](.*?)['"].*?%>/i
+    ALERTS_REGEX = /<p\s+class=['"](.*?)['"]>(.*?)<\/p>/im
 
     def write!
       @dependent_sections ||= {}
@@ -92,6 +97,7 @@ module Docs
                      .gsub(LINKS_REGEX, &method(:cleanup_links))
                      .gsub(PARTIAL_REGEX, &method(:cleanup_partials))
                      .gsub(CODE_SNIPPET_REGEX, &method(:cleanup_code_snippet))
+                     .gsub(ALERTS_REGEX, &method(:cleanup_alerts))
       warn_erb new_contents
       FileUtils.mkdir_p(File.dirname(new_path))
       File.write(new_path, new_contents)
@@ -111,6 +117,13 @@ module Docs
     end
 
     private
+
+    def cleanup_alerts(match)
+      _, classes, content = *match.match(ALERTS_REGEX)
+      return "!!! warning\n    #{content}\n\n" if classes.include?('warning')
+
+      "!!! note\n    #{content}\n\n"
+    end
 
     def cleanup_code_snippet(match)
       _, from, at = *match.match(CODE_SNIPPET_REGEX)

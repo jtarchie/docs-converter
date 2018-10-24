@@ -130,6 +130,19 @@ RSpec.describe 'when running the converter' do
       expect(config['plugins'].first['jinja2']['dependent_sections']).to include('org/repo' => '../repo')
       expect(doc.contents).to eq "code: {% code_snippet 'org/repo', 'snippet-name' %}"
     end
+
+    it 'converts warnings and notes' do
+      doc = create_doc('<p class="note">Note</p><p class="note warning">Warning</p>')
+      expect(convert_docs).to be_truthy
+      expect(doc.contents).to eq(<<~DOC)
+      !!! note
+          Note
+
+      !!! warning
+          Warning
+
+      DOC
+    end
   end
 
   context 'with the mkdocs.yml' do
@@ -138,6 +151,7 @@ RSpec.describe 'when running the converter' do
     it 'uses material view and sane defaults' do
       expect(convert_docs).to be_truthy
       expect(config['theme']).to eq(
+        'logo' => 'https://docs.pivotal.io/images/icon-p-green.jpg',
         'name' => 'material',
         'palette' => {
           'primary' => 'teal',
@@ -161,6 +175,7 @@ RSpec.describe 'when running the converter' do
     it 'has allows syntax highlighting like github' do
       expect(convert_docs).to be_truthy
       expect(requirements).to include 'pygments'
+      expect(config['markdown_extensions']).to include 'admonition'
       expect(config['markdown_extensions']).to include 'codehilite'
     end
 
