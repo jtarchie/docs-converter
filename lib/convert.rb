@@ -120,9 +120,9 @@ module Docs
 
     def cleanup_alerts(match)
       _, classes, content = *match.match(ALERTS_REGEX)
-      return "!!! warning\n    #{content}\n\n" if classes.include?('warning')
+      return "!!! warning \"\"\n    #{content}\n\n" if classes.include?('warning')
 
-      "!!! note\n    #{content}\n\n"
+      "!!! note \"\"\n    #{content}\n\n"
     end
 
     def cleanup_code_snippet(match)

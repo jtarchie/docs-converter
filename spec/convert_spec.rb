@@ -135,10 +135,10 @@ RSpec.describe 'when running the converter' do
       doc = create_doc('<p class="note">Note</p><p class="note warning">Warning</p>')
       expect(convert_docs).to be_truthy
       expect(doc.contents).to eq(<<~DOC)
-      !!! note
+      !!! note ""
           Note
 
-      !!! warning
+      !!! warning ""
           Warning
 
       DOC
