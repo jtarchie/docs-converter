@@ -85,7 +85,7 @@ module Docs
     PARTIAL_REGEX = /<%=\s+partial\s+['"].*?['"]\s+%>/i
     ANCHOR_REGEX = %r{<a\s+id\s*=\s*.*?>.*?</a>}i
     CODE_SNIPPET_REGEX = /<%=\s+yield_for_code_snippet\s+from:\s*['"](.*?)['"].*at:\s*['"](.*?)['"].*?%>/i
-    ALERTS_REGEX = /<p\s+class=['"](.*?)['"]>(.*?)<\/p>/im
+    ALERTS_REGEX = /\s*<p\s+class=['"](.*?)['"]>(.*?)<\/p>\s*/im
 
     def write!
       @dependent_sections ||= {}
@@ -120,9 +120,10 @@ module Docs
 
     def cleanup_alerts(match)
       _, classes, content = *match.match(ALERTS_REGEX)
-      return "!!! warning \"\"\n    #{content}\n\n" if classes.include?('warning')
-
-      "!!! note \"\"\n    #{content}\n\n"
+      content = content.gsub(/\s+/, ' ').split("\n").join("\n    ")
+      classes = classes.split(/\s+/)
+      classes.delete('note')
+      return "\n\n!!! #{classes.last || "note"} \"\"\n    #{content}\n\n"
     end
 
     def cleanup_code_snippet(match)

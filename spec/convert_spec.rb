@@ -132,16 +132,9 @@ RSpec.describe 'when running the converter' do
     end
 
     it 'converts warnings and notes' do
-      doc = create_doc('<p class="note">Note</p><p class="note warning">Warning</p>')
+      doc = create_doc('    <p class="note">Note</p><p class="note warning">Warning</p>')
       expect(convert_docs).to be_truthy
-      expect(doc.contents).to eq(<<~DOC)
-      !!! note ""
-          Note
-
-      !!! warning ""
-          Warning
-
-      DOC
+      expect(doc.contents).to eq("\n\n!!! note \"\"\n    Note\n\n\n\n!!! warning \"\"\n    Warning\n\n")
     end
   end
 
