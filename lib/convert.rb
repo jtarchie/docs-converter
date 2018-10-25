@@ -123,7 +123,7 @@ module Docs
       content = content.gsub(/\s+/, ' ').split("\n").join("\n    ")
       classes = classes.split(/\s+/)
       classes.delete('note')
-      return "\n\n!!! #{classes.last || "note"} \"\"\n    #{content}\n\n"
+      "\n\n!!! #{classes.last || 'note'} \"\"\n    #{content}\n\n"
     end
 
     def cleanup_code_snippet(match)
