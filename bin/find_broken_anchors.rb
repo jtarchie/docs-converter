@@ -1,3 +1,4 @@
+#!/usr/bin/env ruby
 # frozen_string_literal: true
 
 require 'capybara'
@@ -12,7 +13,9 @@ include Capybara::DSL
 
 logger = Logger.new(STDOUT)
 
-base_url = 'https://pivotal.github.io/platform-automation'
+base_url = ARGV[0]
+
+raise 'Please provide a URL to check anchor tags' if base_url.nil?
 
 sites = [base_url]
 found_links = {}
@@ -37,7 +40,7 @@ until sites.empty?
   end
   sites += found_links[site].map do |link|
     uri = URI.parse(link)
-    "#{uri.scheme}://#{uri.host}#{uri.path}"
+    "#{uri.scheme}://#{uri.host}:#{uri.port || '80'}#{uri.path}"
   end
   sites.uniq!
 end
