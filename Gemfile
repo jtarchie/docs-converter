@@ -4,7 +4,6 @@ source 'https://rubygems.org'
 
 gem 'capybara'
 gem 'nokogiri'
-gem 'nokogiri'
 gem 'rspec'
 gem 'rubocop'
 gem 'selenium-webdriver'

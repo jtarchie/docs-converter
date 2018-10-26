@@ -52,6 +52,7 @@ RSpec.describe 'when running the converter' do
 
   def convert_docs(sitemap_path: nil)
     system('pip uninstall --yes mkdocs-jinja2')
+    system('pip install --yes mkdocs')
     Docs::Convert.new(
       source_dir: source_dir,
       output_dir: output_dir,
