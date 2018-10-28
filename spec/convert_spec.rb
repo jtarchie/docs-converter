@@ -52,7 +52,7 @@ RSpec.describe 'when running the converter' do
 
   def convert_docs(sitemap_path: nil)
     system('pip uninstall --yes mkdocs-jinja2')
-    system('pip install --yes mkdocs')
+    system('pip install mkdocs')
     Docs::Convert.new(
       source_dir: source_dir,
       output_dir: output_dir,
@@ -128,7 +128,7 @@ RSpec.describe 'when running the converter' do
 
       doc = create_doc 'code: <%= yield_for_code_snippet from: "org/repo", at: "snippet-name" %>'
       expect(convert_docs).to be_truthy
-      expect(config['plugins'].first['jinja2']['dependent_sections']).to include('org/repo' => '../repo')
+      expect(config['plugins'][1]['jinja2']['dependent_sections']).to include('org/repo' => '../repo')
       expect(doc.contents).to eq "code: {% code_snippet 'org/repo', 'snippet-name' %}"
     end
 
@@ -161,8 +161,8 @@ RSpec.describe 'when running the converter' do
       expect(config['strict']).to eq true
       expect(config['use_directory_urls']).to eq false
 
-      expect(config['plugins']).to include('jinja2' => { 'dependent_sections' => {} })
-      expect(config['plugins']).to include('search')
+      expect(config['plugins']).to include({'search' => {}})
+      expect(config['plugins']).to include({'jinja2' => {}})
       expect(requirements).to include 'git+https://github.com/jtarchie/docs-converter.git#egg=mkdocs-jinja2&subdirectory=mkdocs-plugins/mkdocs-jinja2'
     end
 
