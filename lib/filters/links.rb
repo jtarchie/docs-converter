@@ -3,7 +3,8 @@
 module Docs
   module Filters
     class Links
-      LINKS_REGEX = /(\(.*?\.html.*?\))/
+      LINKS_REGEX = /\[(.*?)\]\((.*?)\)/
+      FOOTER_LINKS_REGEX = /^\[(.*?)\]: (.*)/
 
       def initialize(content:, path:, config:)
         @content = content
@@ -11,8 +12,16 @@ module Docs
 
       def process
         @content.gsub(LINKS_REGEX) do |match|
-          if URI.parse(match[1..-2]).relative?
-            match.gsub('.html', '.md')
+          matches = match.match(LINKS_REGEX).to_a
+          if URI.parse(matches[2]).relative?
+            "[#{matches[1]}](#{matches[2].gsub('.html', '.md')})"
+          else
+            match
+          end
+        end.gsub(FOOTER_LINKS_REGEX) do |match|
+          matches = match.match(FOOTER_LINKS_REGEX).to_a
+          if URI.parse(matches[2]).relative?
+            "[#{matches[1]}]: #{matches[2].gsub('.html', '.md')}"
           else
             match
           end
