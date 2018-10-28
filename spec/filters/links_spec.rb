@@ -30,6 +30,15 @@ RSpec.describe 'When filtering links' do
     )
     content = filter.process
     expect(content).to eq '[index.html](index.md)'
+  end
 
+  it 'handles unicode characters in the link' do
+    filter = Docs::Filters::Links.new(
+      path: nil,
+      config: nil,
+      content: "[feedback](mailto:admin\u2013feedback@example.com)"
+    )
+    content = filter.process
+    expect(content).to eq "[feedback](mailto:admin\u2013feedback@example.com)"
   end
 end

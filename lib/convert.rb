@@ -11,16 +11,18 @@ module Docs
       system("mkdocs new #{output_dir}")
       config = read_config
 
-      Dir[File.join(source_dir, '**', '*')].each do |filename|
-        next if File.directory?(filename)
+      FileUtils.cp_r(File.join(source_dir, '.'), File.join(output_dir, 'docs'))
 
+      Dir.glob([
+        File.join(output_dir, '**', '*.html.md.erb'),
+        File.join(output_dir, '**', '*.mmd.erb'),
+      ]).each do |filename|
         doc = Document.new(
           path: filename,
           config: config,
-          source_dir: source_dir,
-          output_dir: output_dir
         )
         doc.write!
+        File.unlink(filename)
       end
       write_mkdocs_config(config)
       write_requirements

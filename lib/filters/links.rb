@@ -18,6 +18,8 @@ module Docs
           else
             match
           end
+        rescue
+          match
         end.gsub(FOOTER_LINKS_REGEX) do |match|
           matches = match.match(FOOTER_LINKS_REGEX).to_a
           if URI.parse(matches[2]).relative?
@@ -25,6 +27,8 @@ module Docs
           else
             match
           end
+        rescue
+          match
         end
       end
     end
