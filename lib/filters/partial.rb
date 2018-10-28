@@ -19,6 +19,7 @@ module Docs
           ].find do |p|
             !Dir[File.join(File.dirname(@path), "#{p}*")].empty?
           end
+          return %({% include "#{filename}" %}) unless partial_path
 
           if filename.include?('.')
             %({% include "#{partial_path}" %})

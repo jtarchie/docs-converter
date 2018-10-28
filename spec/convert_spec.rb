@@ -161,8 +161,8 @@ RSpec.describe 'when running the converter' do
       expect(config['strict']).to eq true
       expect(config['use_directory_urls']).to eq false
 
-      expect(config['plugins']).to include({'search' => {}})
-      expect(config['plugins']).to include({'jinja2' => {}})
+      expect(config['plugins']).to include('search' => {})
+      expect(config['plugins']).to include('jinja2' => {})
       expect(requirements).to include 'git+https://github.com/jtarchie/docs-converter.git#egg=mkdocs-jinja2&subdirectory=mkdocs-plugins/mkdocs-jinja2'
     end
 

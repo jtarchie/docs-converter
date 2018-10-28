@@ -14,12 +14,12 @@ module Docs
       FileUtils.cp_r(File.join(source_dir, '.'), File.join(output_dir, 'docs'))
 
       Dir.glob([
-        File.join(output_dir, '**', '*.html.md.erb'),
-        File.join(output_dir, '**', '*.mmd.erb'),
-      ]).each do |filename|
+                 File.join(output_dir, '**', '*.html.md.erb'),
+                 File.join(output_dir, '**', '*.mmd.erb')
+               ]).each do |filename|
         doc = Document.new(
           path: filename,
-          config: config,
+          config: config
         )
         doc.write!
         File.unlink(filename)
@@ -57,7 +57,7 @@ module Docs
       config['use_directory_urls'] = false
       config['plugins'] = {
         'search' => {},
-        'jinja2' => {},
+        'jinja2' => {}
       }
       (config['markdown_extensions'] ||= [])
         .push('codehilite')
@@ -71,7 +71,7 @@ module Docs
     def write_mkdocs_config(config)
       config_file = File.join(output_dir, 'mkdocs.yml')
       config['plugins'] = config['plugins'].map do |key, value|
-        {key => value}
+        { key => value }
       end
       File.write(config_file, "# Example: https://github.com/squidfunk/mkdocs-material/blob/master/mkdocs.yml\n" + YAML.dump(config))
     end

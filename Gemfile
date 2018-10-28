@@ -3,6 +3,7 @@
 source 'https://rubygems.org'
 
 gem 'capybara'
+gem 'fakefs'
 gem 'nokogiri'
 gem 'rspec'
 gem 'rubocop'

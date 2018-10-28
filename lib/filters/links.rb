@@ -18,7 +18,7 @@ module Docs
           else
             match
           end
-        rescue
+        rescue StandardError
           match
         end.gsub(FOOTER_LINKS_REGEX) do |match|
           matches = match.match(FOOTER_LINKS_REGEX).to_a
@@ -27,7 +27,7 @@ module Docs
           else
             match
           end
-        rescue
+        rescue StandardError
           match
         end
       end
