@@ -11,7 +11,7 @@ module Docs
       system("mkdocs new #{output_dir}")
       config = read_config
 
-      FileUtils.cp_r(File.join(source_dir, '.'), File.join(output_dir, 'docs'))
+      system("rsync -av --exclude='.[!.]*' #{source_dir}/ #{File.join(output_dir, 'docs')}")
 
       Dir.glob([
                  File.join(output_dir, '**', '*.html.md.erb'),

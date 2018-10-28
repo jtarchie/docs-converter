@@ -18,8 +18,8 @@ module Docs
           "{% code_snippet '#{from}', '#{at}' %}"
         end
         plugin = @config['plugins']['jinja2'] || {}
-        plugin['dependent_sections'] ||= []
-        plugin['dependent_sections'].push(@dependent_sections)
+        plugin['dependent_sections'] ||= {}
+        plugin['dependent_sections'].merge!(@dependent_sections)
         @config['plugins']['jinja2'] = plugin
 
         content
