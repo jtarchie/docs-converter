@@ -51,8 +51,6 @@ RSpec.describe 'when running the converter' do
   end
 
   def convert_docs(sitemap_path: nil)
-    system('pip uninstall --yes mkdocs-jinja2')
-    system('pip install mkdocs')
     Docs::Convert.new(
       source_dir: source_dir,
       output_dir: output_dir,
@@ -77,15 +75,6 @@ RSpec.describe 'when running the converter' do
 
       expect(doc1.contents).to eq '{% include "testing/_some_file.md" %}'
       expect(doc2.contents).to eq '{% include "testing/_some_file.md" %}'
-      expect(File.exist?(partial.new_path)).to be_truthy
-    end
-
-    it 'converts partials that do not have an underscore' do
-      doc = create_doc '<%= partial "testing/some_file" %>'
-      partial = create_partial 'testing/some_file'
-      expect(convert_docs).to be_truthy
-
-      expect(doc.contents).to eq '{% include "testing/some_file.md" %}'
       expect(File.exist?(partial.new_path)).to be_truthy
     end
 
@@ -164,10 +153,6 @@ RSpec.describe 'when running the converter' do
       expect(config['plugins']).to include('search' => {})
       expect(config['plugins']).to include('jinja2' => {})
       expect(requirements).to include 'git+https://github.com/jtarchie/docs-converter.git#egg=mkdocs-jinja2&subdirectory=mkdocs-plugins/mkdocs-jinja2'
-    end
-
-    it 'has allows syntax highlighting like github' do
-      expect(convert_docs).to be_truthy
       expect(requirements).to include 'pygments'
       expect(config['markdown_extensions']).to include 'admonition'
       expect(config['markdown_extensions']).to include 'codehilite'
