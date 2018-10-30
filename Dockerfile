@@ -1,8 +1,9 @@
 FROM ubuntu:bionic
 
-RUN apt-get update
+RUN apt-get update --fix-missing
 RUN apt-get install -y \
   build-essential \
+  curl \
   git \
   libcairo2 \
   libffi-dev \
@@ -20,11 +21,15 @@ RUN apt-get install -y \
   rsync \
   shared-mime-info \
   software-properties-common \
+  wget \
   zlib1g-dev
 RUN apt-add-repository ppa:brightbox/ruby-ng
 RUN apt-get update
 RUN apt-get install -y ruby2.5 ruby2.5-dev
 RUN gem install bundler
+RUN wget -O - https://github.com/BurntSushi/ripgrep/releases/download/0.10.0/ripgrep-0.10.0-x86_64-unknown-linux-musl.tar.gz | tar zxf - --strip-component=1
+RUN mv rg /usr/local/bin/
+
 
 COPY . /docs-converter
 WORKDIR /docs-converter
