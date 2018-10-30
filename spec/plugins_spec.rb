@@ -23,8 +23,9 @@ RSpec.describe 'mkdocs plugins' do
     def create_site
       Dir.chdir(output_dir) do
         system('cat mkdocs.yml')
-        system('pip uninstall --yes mkdocs-jinja2')
-        system('pip install -r requirements.txt')
+        system('cat requirements.txt')
+        system('pip3 uninstall --yes mkdocs-jinja2')
+        system('pip3 install -r requirements.txt')
         system('mkdocs build')
       end
     end

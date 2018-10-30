@@ -42,10 +42,10 @@ class CodeSnippetExtension(Extension):
                     output = subprocess.check_output(['rg', '-m', '1', '-l', 'code_snippet [\w-]+ start', root])
                     names = output.splitlines()
                 except subprocess.CalledProcessError as e:
-                    name = []
+                    names = []
                 regex = re.compile(r"""code_snippet ([\w-]+) start (\w+)\n(.*)\n.*?code_snippet \1 end""", re.MULTILINE | re.DOTALL)
                 for name in names:
-                    path = os.path.join(root, name)
+                    path = os.path.join(root, name.decode())
                     f = open(path, 'r')
                     matches = regex.findall(f.read())
                     for match in matches:
