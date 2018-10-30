@@ -3,6 +3,8 @@ FROM ubuntu:bionic
 RUN apt-get update --fix-missing
 RUN apt-get install -y \
   build-essential \
+  chromium-browser \
+  chromium-chromedriver \
   curl \
   git \
   libcairo2 \
@@ -36,6 +38,7 @@ WORKDIR /docs-converter
 
 ENV LC_ALL=C.UTF-8
 ENV LANG=C.UTF-8
+ENV PATH=$PATH:/usr/lib/chromium-browser
 
 RUN bundle install
 RUN pip3 install -r requirements.txt
