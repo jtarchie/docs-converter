@@ -27,7 +27,7 @@ module Docs
       write_mkdocs_config(config)
       write_requirements
       Dir.chdir(output_dir) do
-        system('pip install -r requirements.txt')
+        system('pip3 install -r requirements.txt')
         system('mkdocs build -s')
       end
     end

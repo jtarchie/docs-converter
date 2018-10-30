@@ -3,6 +3,7 @@ FROM ubuntu:bionic
 RUN apt-get update
 RUN apt-get install -y \
   build-essential \
+  git \
   libcairo2 \
   libffi-dev \
   libgdk-pixbuf2.0-0 \
@@ -16,6 +17,7 @@ RUN apt-get install -y \
   python3-pip \
   python3-setuptools \
   python3-wheel \
+  rsync \
   shared-mime-info \
   software-properties-common \
   zlib1g-dev
@@ -27,6 +29,8 @@ RUN gem install bundler
 COPY . /docs-converter
 WORKDIR /docs-converter
 
-RUN bundle install
-RUN bundle exec rspec
+ENV LC_ALL=C.UTF-8
+ENV LANG=C.UTF-8
 
+RUN bundle install
+RUN pip3 install -r requirements.txt
