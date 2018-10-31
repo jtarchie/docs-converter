@@ -18,6 +18,7 @@ Purposely removing ERB from the equation.
   the corresponding `include` will do a look up of a `_some_file` and then `some_file` to support Rails style partials
 * all header anchors (`<a id="name"></a>`) are remove, as mkdocs manages those automatically
 * all `*.html.md.erb` have their extension changed to `.md` as required by mkdocs
+* all links with a relative `.html` are converted to `.md` as required by mkdocs
 * all `<% mermaid_diagram do %><% end %>` are converted to `<div class="mermaid"></div>` and the `mermaid.js` is include an external CDN provider
 * all `<p class="note|warning"></p>` (ie alerts) are converted to `!!! note|warning` notation (used in the Python markdown library)
 * icon and favicon set to Pivotal logo

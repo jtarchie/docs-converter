@@ -59,7 +59,7 @@ RSpec.describe 'when running the converter' do
   end
 
   context 'with markdown docs' do
-    it 'handles removings a[id]' do
+    it 'handles removing a[id]' do
       doc = create_doc '#<a id="testing"></a> testing'
       expect(convert_docs).to be_truthy
 
