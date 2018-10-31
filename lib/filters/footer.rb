@@ -11,7 +11,10 @@ module Docs
 
       def process
         @content.gsub(FOOTER_LINKS_REGEX) do |match|
-          if URI.parse(match.match(FOOTER_LINKS_REGEX)[1]).relative?
+          uri = match.match(FOOTER_LINKS_REGEX)[1]
+          return match if uri.start_with?('#')
+
+          if URI.parse(uri).relative?
             match.gsub('.html', '.md')
           else
             match
