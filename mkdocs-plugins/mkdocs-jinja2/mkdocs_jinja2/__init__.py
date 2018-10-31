@@ -68,7 +68,10 @@ class JinjaMkDocPlugin(plugins.BasePlugin):
 
     def on_page_markdown(self, markdown, page, config, files):
         env = Environment(
-            loader=FileSystemLoader(os.path.dirname(page.file.abs_src_path)),
+            loader=FileSystemLoader([
+                os.path.dirname(page.file.abs_src_path),
+                config['docs_dir'],
+            ]),
             extensions=[CodeSnippetExtension],
             )
         env.dependent_sections=self.config['dependent_sections']
