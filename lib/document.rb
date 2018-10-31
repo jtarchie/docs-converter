@@ -10,7 +10,7 @@ module Docs
       @dependent_sections ||= {}
       warn "Converting #{path} => #{new_path}"
       new_contents = [Filters::Alerts, Filters::Anchor, Filters::CodeSnippet, Filters::Footer,
-                      Filters::Links, Filters::Mermaid, Filters::Partial].inject(contents) do |content, filter|
+                      Filters::Links, Filters::Mermaid, Filters::Partial, Filters::ImageTag].inject(contents) do |content, filter|
         filter.new(
           content: content,
           path: path,
