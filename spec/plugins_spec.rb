@@ -13,7 +13,10 @@ RSpec.describe 'mkdocs plugins' do
   context 'with jinja2 support' do
     def create_docs(additional_config = {})
       system("mkdocs new #{output_dir}")
-      File.write(File.join(output_dir, 'requirements.txt'), "file://#{plugin_dir}?egg=mkdocs-jinja2")
+      File.write(File.join(output_dir, 'requirements.txt'), <<-REQUIREMENTS)
+      file://#{plugin_dir}?egg=mkdocs-jinja2")
+      pyramid_jinja2
+      REQUIREMENTS
       config_file = File.join(output_dir, 'mkdocs.yml')
       config = YAML.load_file(config_file)
       config['plugins'] ||= [{ 'jinja2' => additional_config }]
@@ -32,7 +35,9 @@ RSpec.describe 'mkdocs plugins' do
     end
 
     def write_doc(name, contents)
-      File.write(File.join(docs_dir, name), contents)
+      path = File.join(docs_dir, name)
+      FileUtils.mkdir_p(File.dirname(path))
+      File.write(path, contents)
     end
 
     def read_doc(name)
@@ -42,12 +47,16 @@ RSpec.describe 'mkdocs plugins' do
     it 'supports includes using the file system docs/ as the base lookup path' do
       create_docs
 
-      write_doc 'test.md', "a header: {% include 'header.md' %}"
-      write_doc 'header.md', 'appears'
+      write_doc 'test.md', "a header: {% include 'header1.md' %}"
+      write_doc 'header1.md', 'appears'
+
+      write_doc 'testing/test.md', "a header: {% include 'header.md' %}"
+      write_doc 'testing/header.md', 'appears again'
 
       create_site
 
       expect(read_doc('test.html')).to include 'a header: appears'
+      expect(read_doc('testing/test.html')).to include 'a header: appears again'
     end
 
     context 'with code snippets' do
