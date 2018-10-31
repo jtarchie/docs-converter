@@ -1,7 +1,8 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require 'pp'
 require 'fakefs/spec_helpers'
+require 'spec_helper'
 require 'tmpdir'
 require_relative '../../lib/filters/partial'
 
@@ -32,19 +33,19 @@ RSpec.describe 'Converts partials to jinja includes' do
   it 'handles partials with _ prefixing' do
     create_file('_something')
     f = filter('<%= partial "something" %>')
-    expect(f.process).to match /\{% include "\.\/_something.*" %}/
+    expect(f.process).to match /\{% include "_something.*" %}/
   end
 
   it 'handles partials with no prefixing' do
     create_file('something')
     f = filter('<%= partial "something" %>')
-    expect(f.process).to match /\{% include "\.\/something.*" %}/
+    expect(f.process).to match /\{% include "something.*" %}/
   end
 
   it 'converts html to md' do
     create_file('something.html')
     f = filter('<%= partial "something" %>')
-    expect(f.process).to match /\{% include "\.\/something.md" %}/
+    expect(f.process).to match /\{% include "something.md" %}/
   end
 
   it 'handles partials that do not exit' do
@@ -55,6 +56,6 @@ RSpec.describe 'Converts partials to jinja includes' do
   it 'does nothing when an extension is specified' do
     create_file('something.txt')
     f = filter('<%= partial "something.txt" %>')
-    expect(f.process).to match /\{% include "\.\/something.txt" %}/
+    expect(f.process).to match /\{% include "something.txt" %}/
   end
 end
