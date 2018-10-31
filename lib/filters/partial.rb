@@ -3,7 +3,7 @@
 module Docs
   module Filters
     class Partial
-      PARTIAL_REGEX = /<%=\s+partial\s+['"].*?['"]\s+%>/i
+      PARTIAL_REGEX = /<%=\s+partial\s+['"](.*?)['"]\s+%>/i
 
       def initialize(content:, path:, config:)
         @content = content
@@ -12,7 +12,7 @@ module Docs
 
       def process
         @content.gsub(PARTIAL_REGEX) do |match|
-          filename = match.match(/['"](.*?)['"]/)[1]
+          filename = match.match(PARTIAL_REGEX)[1]
           partial_path = [
             File.join(File.dirname(filename), "_#{File.basename filename}"),
             File.join(File.dirname(filename), (File.basename filename).to_s)
@@ -20,13 +20,16 @@ module Docs
             !Dir[File.join(File.dirname(@path), "#{p}*")].empty?
           end
 
-          return %({% include "#{filename}" %}) unless partial_path
-          partial_path.gsub!(/^\.\//, '')
+          if partial_path
+            partial_path.gsub!(/^\.+\//, '')
 
-          if filename.include?('.')
-            %({% include "#{partial_path}" %})
+            if filename.include?('.')
+              %({% include "#{partial_path}" %})
+            else
+              %({% include "#{partial_path}.md" %})
+            end
           else
-            %({% include "#{partial_path}.md" %})
+            %({% include "#{filename}" %})
           end
         end
       end

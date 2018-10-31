@@ -58,4 +58,16 @@ RSpec.describe 'Converts partials to jinja includes' do
     f = filter('<%= partial "something.txt" %>')
     expect(f.process).to match /\{% include "something.txt" %}/
   end
+
+  it 'handles complex partial definitions' do
+    f = filter(<<-ERB)
+    <% if vars.product_name == 'CF' %>
+    <%= partial 'lb_health_check_oss' %>
+    <% else %>
+    <%= partial '../opsguide/lb_health_check' %>
+    <% end %>
+    ERB
+
+    expect(f.process).to include "<% if vars.product_name == 'CF' %>\n    {% include \"lb_health_check_oss\" %}\n    <% else %>\n    {% include \"../opsguide/lb_health_check\" %}\n    <% end %>"
+  end
 end
