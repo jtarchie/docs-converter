@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
+require_relative '../lib/convert'
 require 'tmpdir'
 
 RSpec.describe 'mkdocs plugins' do

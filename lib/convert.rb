@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require 'fileutils'
-require 'nokogiri'
 require 'yaml'
 require_relative 'document'
 require_relative 'nav_generator'

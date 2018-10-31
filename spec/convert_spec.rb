@@ -6,6 +6,7 @@ require 'spec_helper'
 require 'tempfile'
 require 'tmpdir'
 require 'yaml'
+require_relative '../lib/convert'
 
 RSpec.describe 'when running the converter' do
   let(:source_dir) { Dir.mktmpdir }
