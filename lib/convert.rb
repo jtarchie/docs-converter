@@ -4,6 +4,7 @@ require 'fileutils'
 require 'nokogiri'
 require 'yaml'
 require_relative 'document'
+require_relative 'nav_generator'
 
 module Docs
   Convert = Struct.new(:source_dir, :output_dir, :sitemap_path, keyword_init: true) do
@@ -77,14 +78,7 @@ module Docs
     end
 
     def generate_nav
-      return [] unless sitemap_path
-
-      site_links = Nokogiri::HTML(File.read(sitemap_path)).css('ul li a')
-      site_links.map do |link|
-        name = link.text
-        uri  = File.basename(link['href']).gsub('.html', '.md').to_s
-        { name => uri }
-      end
+      NavGenerator.new(path: sitemap_path).to_hash
     end
   end
 end
