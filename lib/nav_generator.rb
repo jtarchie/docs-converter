@@ -12,6 +12,7 @@ module Docs
       return [] unless @path
 
       root = Nokogiri::HTML(File.read(@path)).css('ul').first
+      puts Nokogiri::HTML(File.read(@path)).errors
       return [] unless root
 
       links(root.css('> li').to_a)
@@ -24,35 +25,37 @@ module Docs
       while li = nodes.shift
         nav += [parse_li(li, nodes)]
       end
-      nav
+      nav.compact
     end
 
     def parse_li(li, nodes)
       if link = li.css('> a[href]').first
-        name = link.text
+        name = link.text.strip
         uri = link['href'].gsub('.html', '.md').to_s
         if ul = li.css('> ul').first
-          { name => [{ 'Home' => uri }] + links(ul.css('> li').to_a) }
+          { name => [{ 'Home' => uri }] + links(ul.css('> li').to_a).compact }
         else
           { name => uri }
         end
       elsif span = li.css('> span').first
-        name = span.text
+        return unless span.css('> hr').empty?
+
+        name = span.text.strip
         ul = li.css('> ul').first
-        { name => links(ul.css('> li').to_a) }
+        { name => links(ul.css('> li').to_a).compact }
       elsif strong = li.css('> strong').first
-        name = strong.text
+        name = strong.text.strip
 
         links = []
         while sibling = nodes.shift
-          if sibling['class'].to_s.include?('has_submenu')
+          unless sibling.css('> strong').empty?
             nodes.unshift sibling
             break
           end
 
           links.push(parse_li(sibling, sibling.css('> li').to_a))
         end
-        { name => links }
+        { name => links.compact }
       end
     end
   end

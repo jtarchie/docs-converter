@@ -44,4 +44,11 @@ RSpec.describe 'When generating a nav' do
                         { 'Using' => 'using.md' }
                       ])
   end
+
+  it 'does something complex' do
+    File.write(nav_file, File.read(File.join(__dir__, 'fixtures/complexnav.html')))
+    nav = Docs::NavGenerator.new(path: nav_file).to_hash
+
+    puts nav.inspect
+  end
 end
