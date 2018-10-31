@@ -6,9 +6,9 @@ require_relative '../../lib/filters/footer'
 RSpec.describe 'When filtering footer notes' do
   def filter(content)
     Docs::Filters::Footer.new(
-        content: content,
-        path: nil,
-        config: nil
+      content: content,
+      path: nil,
+      config: nil
     ).process
   end
 

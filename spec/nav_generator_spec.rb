@@ -30,14 +30,18 @@ RSpec.describe 'When generating a nav' do
     nav = Docs::NavGenerator.new(path: nav_file).to_hash
 
     expect(nav).to eq([
-                        { 'Home' => 'index.md' },
-                        { 'Using' => 'using.md' },
+                        { 'Header' => [{ 'Appears Under header' => 'under.md' }] },
                         { 'API' => [
                           { 'Home' => 'api/index.md' },
                           { 'Config' => 'api/config.md' },
                           { 'Auth' => 'api/auth.md' }
                         ] },
-                        { 'Release Notes' => 'release-notes.md' }
+                        { 'Release Notes' => 'release-notes.md' },
+                        { 'Another Nav' => [
+                          { 'Something' => 'another-nav/something.md' }
+                        ] },
+                        { 'Home' => 'index.md' },
+                        { 'Using' => 'using.md' }
                       ])
   end
 end
