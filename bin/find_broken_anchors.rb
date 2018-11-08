@@ -70,9 +70,13 @@ end.flatten.compact.uniq
 
 logger.info "total unique anchors found: #{sitewide_anchors.size}"
 
-found_links.values.flatten.uniq.each do |link|
-  next unless link.include?('#')
-  next if sitewide_anchors.include?(link)
+bad_anchors = found_links.values.flatten.uniq.select do |link|
+  link.include?('#') && !sitewide_anchors.include?(link)
+end
 
+exit 0 if bad_anchors.empty?
+
+bad_anchors.each do |link|
   logger.warn "#{link} goes nowhere"
 end
+exit 1
