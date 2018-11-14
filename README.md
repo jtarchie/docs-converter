@@ -33,6 +33,7 @@ Purposely removing ERB from the equation.
 * `code_snippet` will error when snippet is not defined
 * `include` will error when partial is not defined
 * does not read `config.yml` at all
+* `{{` are not automatically escaped
 
 # Tests
 
