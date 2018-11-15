@@ -34,6 +34,7 @@ Purposely removing ERB from the equation.
 * `include` will error when partial is not defined
 * does not read `config.yml` at all
 * `{{` are not automatically escaped
+* warnings with HTML links are not converted to markdown links
 
 # Tests
 
