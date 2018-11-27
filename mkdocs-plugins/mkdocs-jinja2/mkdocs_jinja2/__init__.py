@@ -39,7 +39,7 @@ class CodeSnippetExtension(Extension):
                 names = []
                 try:
                     # this uses `rg` as searching across files is not something we need to reprogram
-                    output = subprocess.check_output(['rg', '-m', '1', '-l', 'code_snippet [\w-]+ start', root])
+                    output = subprocess.check_output(['rg', '-l', 'code_snippet [\w-]+ start', root])
                     names = output.splitlines()
                 except subprocess.CalledProcessError as e:
                     names = []
