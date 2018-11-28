@@ -7,7 +7,7 @@ setup(
     author_email='jarchie@pivotal',
     packages=['mkdocs_jinja2'],
     description='Uses jinja2 and file system loader (for include and partials)',
-    install_requires=[],
+    install_requires=['regex'],
     entry_points={
         'mkdocs.plugins': [
             'jinja2 = mkdocs_jinja2:JinjaMkDocPlugin',

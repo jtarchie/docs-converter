@@ -4,8 +4,7 @@ from jinja2 import Environment, FileSystemLoader, lexer, nodes, TemplateRuntimeE
 from jinja2.ext import Extension
 from mkdocs import plugins, config
 import os
-import re
-import sys
+import regex
 import subprocess
 
 
@@ -39,15 +38,15 @@ class CodeSnippetExtension(Extension):
                 names = []
                 try:
                     # this uses `rg` as searching across files is not something we need to reprogram
-                    output = subprocess.check_output(['rg', '-l', 'code_snippet [\w-]+ start', root])
+                    output = subprocess.check_output(['rg', '-m', '1', '-l', 'code_snippet [\w-]+ start', root])
                     names = output.splitlines()
                 except subprocess.CalledProcessError as e:
                     names = []
-                regex = re.compile(r"""code_snippet ([\w-]+) start (\w+)\n(.*)\n.*?code_snippet \1 end""", re.MULTILINE | re.DOTALL)
+                finder = regex.compile(r"""code_snippet ([\w-]+) start (\w+)\n(.*)\n.*?code_snippet \1 end""", regex.MULTILINE | regex.DOTALL)
                 for name in names:
                     path = os.path.join(root, name.decode())
                     f = open(path, 'r')
-                    matches = regex.findall(f.read())
+                    matches = finder.findall(f.read(), overlapped=True)
                     for match in matches:
                         snippets[match[0]] = """```%s\n%s\n```""" % (match[1], match[2])
                 self.environment.code_snippets[repo_name] = snippets
