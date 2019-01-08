@@ -48,7 +48,7 @@ class CodeSnippetExtension(Extension):
                     f = open(path, 'r')
                     matches = finder.findall(f.read(), overlapped=True)
                     for match in matches:
-                        snippets[match[0]] = """```%s\n%s\n```""" % (match[1], match[2])
+                        snippets[match[0]] = """\n\n```%s\n%s\n```\n\n""" % (match[1], match[2])
                 self.environment.code_snippets[repo_name] = snippets
 
             if code_name in self.environment.code_snippets[repo_name]:

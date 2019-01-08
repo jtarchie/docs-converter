@@ -9,4 +9,4 @@ gem 'rspec'
 gem 'rubocop'
 gem 'selenium-webdriver'
 
-ruby '~> 2.5.0'
+ruby '~> 2.6.0'

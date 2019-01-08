@@ -79,10 +79,10 @@ RSpec.describe 'mkdocs plugins' do
           system('git add -A && git commit -mok')
         end
 
-        write_doc 'test.md', "code here: {% code_snippet 'repo-name', 'snippet-name' %}"
+        write_doc 'test.md', "code here: {% code_snippet 'repo-name', 'snippet-name' %}\nsome extra copy to ensure newlines"
         create_site
 
-        expect(read_doc('test.html')).to include("<code>yaml\nsome: yaml</code>")
+        expect(read_doc('test.html')).to include(%Q{\n<pre><code class="yaml">some: yaml\n</code></pre>\n\n})
       end
     end
   end
