@@ -27,7 +27,7 @@ RUN apt-get install -y \
   zlib1g-dev
 RUN apt-add-repository ppa:brightbox/ruby-ng
 RUN apt-get update
-RUN apt-get install -y ruby2.5 ruby2.5-dev
+RUN apt-get install -y ruby2.6 ruby2.6-dev
 RUN gem install bundler
 RUN wget -O - https://github.com/BurntSushi/ripgrep/releases/download/0.10.0/ripgrep-0.10.0-x86_64-unknown-linux-musl.tar.gz | tar zxf - --strip-component=1
 RUN mv rg /usr/local/bin/
